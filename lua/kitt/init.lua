@@ -106,8 +106,8 @@ local function send_request(body_content)
 
   vim.cmd('vsplit')
   local win = vim.api.nvim_get_current_win()
-  local buffer = vim.api.nvim_create_buf(true, true)
-  vim.api.nvim_win_set_buf(win, buffer)
+  local buf = vim.api.nvim_create_buf(true, true)
+  vim.api.nvim_win_set_buf(win, buf)
 
   local currentLine = 0
   local currentLineContents = ""
@@ -119,25 +119,27 @@ local function send_request(body_content)
         and response.choices[1].delta
         and response.choices[1].delta.content then
       local delta = response.choices[1].delta.content
-      log.trace("Delta: " .. delta)
-      if delta == "\n" then
-        vim.api.nvim_buf_set_lines(buffer, currentLine, currentLine, false, { currentLineContents })
-        currentLine = currentLine + 1
-        currentLineContents = ""
-      elseif delta:match("\n") then
-        for line in delta:gmatch("[^\n]+") do
-          vim.api.nvim_buf_set_lines(buffer, currentLine, currentLine, false,
-            { currentLineContents .. line })
+      log.trace("-- Delta: " .. delta)
+
+      delta:gsub(".", function(c)
+        if c == "\n" then
+          vim.api.nvim_buf_set_lines(buf, currentLine, -1, false, { currentLineContents })
+          log.trace(currentLine .. " <> " .. currentLineContents)
           currentLine = currentLine + 1
           currentLineContents = ""
+        else
+          currentLineContents = currentLineContents .. c
         end
-      elseif delta ~= nil then
-        currentLineContents = currentLineContents .. delta
+      end)
+
+      if currentLineContents then
+        vim.api.nvim_buf_set_lines(buf, currentLine, -1, false, { currentLineContents })
+        log.trace("rest:" .. currentLine .. " <> " .. currentLineContents)
       end
     end
   end
 
-  local response = curl.post(endpoint,
+  curl.post(endpoint,
     {
       body = body_content,
       headers = {
@@ -154,14 +156,6 @@ local function send_request(body_content)
           end
         end)
     })
-
-  if (response.status == 200) then
-    local response_body = vim.fn.json_decode(response.body)
-    local content = response_body.choices[1].message.content
-    return content
-  else
-    -- print(vim.inspect(response))
-  end
 end
 
 local function send_template(template, ...)
