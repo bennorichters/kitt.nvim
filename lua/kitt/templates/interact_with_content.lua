@@ -9,5 +9,4 @@ return {
       role = "user",
     }
   },
-  stream = true,
 }

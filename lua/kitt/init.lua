@@ -9,6 +9,9 @@ local template_body_interact = require("kitt.templates.interact_with_content")
 local template_body_minutes = require("kitt.templates.minutes")
 local template_body_recognize_language = require("kitt.templates.recognize_language")
 
+local log = require("kitt.log")
+log.info("kitt log here")
+
 local open_interactive_popup
 
 local function split_lines(text)
@@ -116,9 +119,9 @@ local function send_request(body_content)
         and response.choices[1].delta
         and response.choices[1].delta.content then
       local delta = response.choices[1].delta.content
+      log.trace("Delta: " .. delta)
       if delta == "\n" then
-        vim.api.nvim_buf_set_lines(buffer, currentLine, currentLine, false,
-          { currentLineContents })
+        vim.api.nvim_buf_set_lines(buffer, currentLine, currentLine, false, { currentLineContents })
         currentLine = currentLine + 1
         currentLineContents = ""
       elseif delta:match("\n") then
@@ -157,7 +160,7 @@ local function send_request(body_content)
     local content = response_body.choices[1].message.content
     return content
   else
-    print(vim.inspect(response))
+    -- print(vim.inspect(response))
   end
 end
 
@@ -169,6 +172,7 @@ local function send_template(template, ...)
     table.insert(subts, encode_text(text))
   end
 
+  template.stream = true
   local body_content = string.format(vim.fn.json_encode(template), unpack(subts))
   return send_request(body_content)
 end
