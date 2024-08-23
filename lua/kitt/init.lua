@@ -108,6 +108,7 @@ local function send_request(body_content)
   local win = vim.api.nvim_get_current_win()
   local buf = vim.api.nvim_create_buf(true, true)
   vim.api.nvim_win_set_buf(win, buf)
+  vim.wo.wrap = true
 
   local currentLine = 0
   local currentLineContents = ""
@@ -179,43 +180,6 @@ local function pass_instructions(template, instructions, text)
   end
 end
 
-open_interactive_popup = function(template, text)
-  local input = Input({
-    enter = true,
-    border = {
-      style = "rounded",
-      text = {
-        top = "Give instructions",
-        top_align = "center",
-        bottom_align = "left",
-      }
-    },
-    position = "50%",
-    size = {
-      width = "80%",
-      height = "60%",
-    },
-  }, {
-    prompt = "> ",
-    keymap = {
-      close = { "<Esc>", "<C-c>" },
-    },
-    on_submit = function(instructions)
-      pass_instructions(template, instructions, text)
-    end,
-  })
-
-  input:mount()
-
-  input:on(event.BufLeave, function()
-    input:unmount()
-  end)
-
-  input:map("i", "<Esc>", function()
-    input:unmount()
-  end, {})
-end
-
 local M = {}
 
 M.ai_improve_grammar = function()
@@ -240,7 +204,9 @@ M.ai_write_minutes = function()
 end
 
 M.ai_interactive = function()
-  open_interactive_popup(template_body_interact, visual_selection())
+  vim.ui.input({ prompt = "Give instructions" }, function(instructions)
+    pass_instructions(template_body_interact, instructions, visual_selection())
+  end)
 end
 
 return M
