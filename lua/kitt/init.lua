@@ -104,8 +104,8 @@ local function send_template(template, ...)
   return send_request(body_content)
 end
 
-local function pass_instructions(template, instructions, text)
-  send_template(template, instructions, text)
+local function pass_command(template, command, text)
+  send_template(template, command, text)
 end
 
 local M = {}
@@ -126,9 +126,9 @@ M.ai_write_minutes = function()
 end
 
 M.ai_interactive = function()
-  vim.ui.input({ prompt = "Give instructions" }, function(instructions)
-    if instructions then
-      pass_instructions(template_body_interact, instructions, visual_selection())
+  vim.ui.input({ prompt = "Give instructions" }, function(command)
+    if command then
+      pass_command(template_body_interact, command, visual_selection())
     end
   end)
 end
