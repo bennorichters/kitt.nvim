@@ -1,9 +1,5 @@
 local curl = require("plenary.curl")
-local Popup = require("nui.popup")
-local Input = require("nui.input")
-local event = require("nui.utils.autocmd").event
 
-local template_body_follow_up = require("kitt.templates.follow_up")
 local template_body_grammar = require("kitt.templates.grammar")
 local template_body_interact = require("kitt.templates.interact_with_content")
 local template_body_minutes = require("kitt.templates.minutes")
@@ -11,70 +7,6 @@ local template_body_recognize_language = require("kitt.templates.recognize_langu
 
 local log = require("kitt.log")
 log.info("kitt log here")
-
-local open_interactive_popup
-
-local function split_lines(text)
-  text = text .. "\n"
-  local lines = {}
-  for str in string.gmatch(text, "(.-)\n") do
-    table.insert(lines, str)
-  end
-
-  return lines
-end
-
-local function open_popup(content)
-  local popup = Popup({
-    enter = true,
-    focusable = false,
-    border = {
-      style = "rounded",
-      text = {
-        top = "Suggestion",
-        top_align = "center",
-        bottom = " q - cancel | r - replace | i - insert | f - follow up",
-        bottom_align = "left",
-      }
-    },
-    position = "50%",
-    size = {
-      width = "80%",
-      height = "60%",
-    },
-    buf_options = {
-      readonly = true,
-      modifiable = false,
-    },
-  })
-
-  local lines = split_lines(content)
-  vim.api.nvim_buf_set_lines(popup.bufnr, 0, 1, false, lines)
-
-  popup:map("n", "q", function()
-    popup:unmount()
-  end, {})
-
-  popup:map("n", "r", function()
-    popup:unmount()
-    local line_number = vim.fn.line(".")
-    vim.api.nvim_buf_set_lines(0, line_number, line_number, false, lines)
-    vim.cmd "normal dd"
-  end, {})
-
-  popup:map("n", "i", function()
-    popup:unmount()
-    local line_number = vim.fn.line(".")
-    vim.api.nvim_buf_set_lines(0, line_number, line_number, false, lines)
-  end, {})
-
-  popup:map("n", "f", function()
-    popup:unmount()
-    open_interactive_popup(template_body_follow_up)
-  end, {})
-
-  popup:mount()
-end
 
 local function current_line()
   local line_number = vim.fn.line(".")
@@ -173,20 +105,13 @@ local function send_template(template, ...)
 end
 
 local function pass_instructions(template, instructions, text)
-  local content = send_template(template, instructions, text)
-
-  if (content) then
-    open_popup(content)
-  end
+  send_template(template, instructions, text)
 end
 
 local M = {}
 
 M.ai_improve_grammar = function()
-  local content = send_template(template_body_grammar, current_line())
-  if (content) then
-    open_popup(content)
-  end
+  send_template(template_body_grammar, current_line())
 end
 
 M.ai_set_spelllang = function()
@@ -197,10 +122,7 @@ M.ai_set_spelllang = function()
 end
 
 M.ai_write_minutes = function()
-  local content = send_template(template_body_minutes, visual_selection())
-  if (content) then
-    open_popup(content)
-  end
+  send_template(template_body_minutes, visual_selection())
 end
 
 M.ai_interactive = function()
