@@ -127,7 +127,9 @@ end
 
 M.ai_interactive = function()
   vim.ui.input({ prompt = "Give instructions" }, function(instructions)
-    pass_instructions(template_body_interact, instructions, visual_selection())
+    if instructions then
+      pass_instructions(template_body_interact, instructions, visual_selection())
+    end
   end)
 end
 
