@@ -134,7 +134,7 @@ end
 M.ai_interactive = function()
   vim.ui.input({ prompt = "Give instructions" }, function(command)
     if command then
-      send_template(template_body_interact, command, visual_selection)
+      send_template(template_body_interact, command, visual_selection())
     end
   end)
 end
