@@ -6,7 +6,7 @@ local template_body_minutes = require("kitt.templates.minutes")
 local template_body_recognize_language = require("kitt.templates.recognize_language")
 
 local log = require("kitt.log")
-log.info("kitt log here")
+log.trace("kitt log here")
 
 local function current_line()
   local line_number = vim.fn.line(".")
@@ -48,12 +48,12 @@ function ResponseWriter:new(obj)
 end
 
 function ResponseWriter:write(delta)
-  log.trace("-- Delta: " .. delta)
+  log.trace("ResponseWriter:write delta=", delta)
 
   delta:gsub(".", function(c)
     if c == "\n" then
+      log.trace("ResponseWriter:write line=", self.line, " content=", self.content)
       vim.api.nvim_buf_set_lines(self.buffer, self.line, -1, false, { self.content })
-      log.trace(self.line .. " <> " .. self.content)
       self.line = self.line + 1
       self.content = ""
     else
@@ -62,8 +62,8 @@ function ResponseWriter:write(delta)
   end)
 
   if self.content then
+    log.trace("ResponseWriter:write -write rest- line=", self.line, " content=", self.content)
     vim.api.nvim_buf_set_lines(self.buffer, self.line, -1, false, { self.content })
-    log.trace("rest:" .. self.line .. " <> " .. self.content)
   end
 end
 
@@ -114,10 +114,6 @@ local function send_template(template, ...)
   return send_request(body_content)
 end
 
-local function pass_command(template, command, text)
-  send_template(template, command, text)
-end
-
 local M = {}
 
 M.ai_improve_grammar = function()
@@ -138,7 +134,7 @@ end
 M.ai_interactive = function()
   vim.ui.input({ prompt = "Give instructions" }, function(command)
     if command then
-      pass_command(template_body_interact, command, visual_selection())
+      send_template(template_body_interact, command, visual_selection)
     end
   end)
 end
