@@ -32,43 +32,53 @@ local function encode_text(text)
   return string.sub(encoded_text, 2, string.len(encoded_text) - 1)
 end
 
+local ResponseWriter = { buffer = nil, line = 0, content = "" }
+function ResponseWriter:new(obj)
+  obj = obj or {}
+  setmetatable(obj, self)
+  self.__index = self
+
+  vim.cmd('vsplit')
+  local win = vim.api.nvim_get_current_win()
+  obj.buffer = vim.api.nvim_create_buf(true, true)
+  vim.api.nvim_win_set_buf(win, obj.buffer)
+  vim.wo.wrap = true
+
+  return obj
+end
+
+function ResponseWriter:write(delta)
+  log.trace("-- Delta: " .. delta)
+
+  delta:gsub(".", function(c)
+    if c == "\n" then
+      vim.api.nvim_buf_set_lines(self.buffer, self.line, -1, false, { self.content })
+      log.trace(self.line .. " <> " .. self.content)
+      self.line = self.line + 1
+      self.content = ""
+    else
+      self.content = self.content .. c
+    end
+  end)
+
+  if self.content then
+    vim.api.nvim_buf_set_lines(self.buffer, self.line, -1, false, { self.content })
+    log.trace("rest:" .. self.line .. " <> " .. self.content)
+  end
+end
+
 local function send_request(body_content)
   local endpoint = os.getenv("OPENAI_ENDPOINT")
   local key = os.getenv("OPENAI_API_KEY")
 
-  vim.cmd('vsplit')
-  local win = vim.api.nvim_get_current_win()
-  local buf = vim.api.nvim_create_buf(true, true)
-  vim.api.nvim_win_set_buf(win, buf)
-  vim.wo.wrap = true
-
-  local currentLine = 0
-  local currentLineContents = ""
-
+  local rw = ResponseWriter:new()
   local on_delta = function(response)
     if response
         and response.choices
         and response.choices[1]
         and response.choices[1].delta
         and response.choices[1].delta.content then
-      local delta = response.choices[1].delta.content
-      log.trace("-- Delta: " .. delta)
-
-      delta:gsub(".", function(c)
-        if c == "\n" then
-          vim.api.nvim_buf_set_lines(buf, currentLine, -1, false, { currentLineContents })
-          log.trace(currentLine .. " <> " .. currentLineContents)
-          currentLine = currentLine + 1
-          currentLineContents = ""
-        else
-          currentLineContents = currentLineContents .. c
-        end
-      end)
-
-      if currentLineContents then
-        vim.api.nvim_buf_set_lines(buf, currentLine, -1, false, { currentLineContents })
-        log.trace("rest:" .. currentLine .. " <> " .. currentLineContents)
-      end
+      rw:write(response.choices[1].delta.content)
     end
   end
 
