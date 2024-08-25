@@ -158,8 +158,4 @@ M.ai_interactive = function()
   end)
 end
 
-M.show_options = function()
-  show_options()
-end
-
 return M
