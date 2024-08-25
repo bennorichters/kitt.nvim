@@ -8,6 +8,9 @@ local template_body_recognize_language = require("kitt.templates.recognize_langu
 local log = require("kitt.log")
 log.trace("kitt log here")
 
+local line = -1
+local buffer = -1
+
 local function current_line()
   local line_number = vim.fn.line(".")
   return vim.api.nvim_buf_get_lines(0, line_number - 1, line_number, false)[1]
@@ -43,6 +46,7 @@ function ResponseWriter:new(obj)
   obj.buffer = vim.api.nvim_create_buf(true, true)
   vim.api.nvim_win_set_buf(win, obj.buffer)
   vim.wo.wrap = true
+  vim.wo.linebreak = true
 
   return obj
 end
@@ -67,9 +71,24 @@ function ResponseWriter:write(delta)
   end
 end
 
+local function show_options()
+  vim.ui.select({ "replace", "ignore" }, {
+    prompt = "Choose what to do with the generated text"
+  }, function(choice)
+    if choice == "replace" then
+      local content = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
+      local txt = table.concat(content, "\n")
+      vim.api.nvim_buf_set_lines(buffer, line - 1, line, false, { txt })
+    end
+  end)
+end
+
 local function send_request(body_content)
   local endpoint = os.getenv("OPENAI_ENDPOINT")
   local key = os.getenv("OPENAI_API_KEY")
+
+  line = vim.fn.line(".")
+  buffer = vim.fn.bufnr()
 
   local rw = ResponseWriter:new()
   local on_delta = function(response)
@@ -93,7 +112,7 @@ local function send_request(body_content)
         function(_, data, _)
           local raw_message = string.gsub(data, "^data: ", "")
           if raw_message == "[DONE]" then
-            print("done")
+            show_options()
           elseif (string.len(data) > 6) then
             on_delta(vim.fn.json_decode(string.sub(data, 6)))
           end
@@ -137,6 +156,10 @@ M.ai_interactive = function()
       send_template(template_body_interact, command, visual_selection())
     end
   end)
+end
+
+M.show_options = function()
+  show_options()
 end
 
 return M
