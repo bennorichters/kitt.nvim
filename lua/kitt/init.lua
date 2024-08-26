@@ -52,11 +52,11 @@ function ResponseWriter:new(obj)
 end
 
 function ResponseWriter:write(delta)
-  log.trace("ResponseWriter:write delta=", delta)
+  log.fmt_trace("ResponseWriter:write delta=%s", delta)
 
   delta:gsub(".", function(c)
     if c == "\n" then
-      log.trace("ResponseWriter:write line=", self.line, " content=", self.content)
+      log.fmt_trace("ResponseWriter:write line=%s content=%s", self.line, self.content)
       vim.api.nvim_buf_set_lines(self.buffer, self.line, -1, false, { self.content })
       self.line = self.line + 1
       self.content = ""
@@ -66,7 +66,7 @@ function ResponseWriter:write(delta)
   end)
 
   if self.content then
-    log.trace("ResponseWriter:write -write rest- line=", self.line, " content=", self.content)
+    log.fmt_trace("ResponseWriter:write -write rest- line=%s content=%s", self.line, self.content)
     vim.api.nvim_buf_set_lines(self.buffer, self.line, -1, false, { self.content })
   end
 end

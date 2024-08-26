@@ -9,10 +9,10 @@
 -- User configuration section
 local default_config = {
   -- Name of the plugin. Prepended to log messages
-  plugin = 'kitt',
+  plugin = "kitt",
 
   -- Should print the output to neovim while running
-  use_console = false,
+  use_console = true,
 
   -- Should highlighting be used in console (using echohl)
   highlights = true,
@@ -134,9 +134,9 @@ log.new = function(config, standalone)
       return log_at_level(i, x, make_string, ...)
     end
 
-    obj[("fmt_%s" ):format(x.name)] = function()
-      return log_at_level(i, x, function(...)
-        local passed = {...}
+    obj[("fmt_%s" ):format(x.name)] = function(...)
+      local passed = {...}
+      return log_at_level(i, x, function()
         local fmt = table.remove(passed, 1)
         local inspected = {}
         for _, v in ipairs(passed) do
