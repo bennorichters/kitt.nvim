@@ -83,10 +83,53 @@ local function show_options()
   end)
 end
 
-local function send_request(body_content)
+local function table_concat(...)
+  local result = {}
+
+  for _, tbl in ipairs({ ... }) do
+    for k, v in pairs(tbl) do
+      if type(k) ~= "number" then
+        result[k] = v
+      else
+        table.insert(result, v)
+      end
+    end
+  end
+
+  return result
+end
+
+local function send_request(body_content, extra_opts)
   local endpoint = os.getenv("OPENAI_ENDPOINT")
   local key = os.getenv("OPENAI_API_KEY")
 
+  local opts = {
+    body = body_content,
+    headers = {
+      content_type = "application/json",
+      api_key = key,
+    },
+  }
+  if extra_opts then
+    opts = table_concat(opts, extra_opts)
+  end
+
+  return curl.post(endpoint, opts)
+end
+
+local function send_plain_request(body_content)
+  local response = send_request(body_content, { timeout = 6000 })
+
+  if (response.status == 200) then
+    local response_body = vim.fn.json_decode(response.body)
+    local content = response_body.choices[1].message.content
+    return content
+  else
+    print(vim.inspect(response))
+  end
+end
+
+local function send_stream_request(body_content)
   line = vim.fn.line(".")
   buffer = vim.fn.bufnr()
 
@@ -101,26 +144,22 @@ local function send_request(body_content)
     end
   end
 
-  curl.post(endpoint,
-    {
-      body = body_content,
-      headers = {
-        content_type = "application/json",
-        api_key = key,
-      },
-      stream = vim.schedule_wrap(
-        function(_, data, _)
-          local raw_message = string.gsub(data, "^data: ", "")
-          if raw_message == "[DONE]" then
-            show_options()
-          elseif (string.len(data) > 6) then
-            on_delta(vim.fn.json_decode(string.sub(data, 6)))
-          end
-        end)
-    })
+  local stream = {
+    stream = vim.schedule_wrap(
+      function(_, data, _)
+        local raw_message = string.gsub(data, "^data: ", "")
+        if raw_message == "[DONE]" then
+          show_options()
+        elseif (string.len(data) > 6) then
+          on_delta(vim.fn.json_decode(string.sub(data, 6)))
+        end
+      end)
+  }
+
+  send_request(body_content, stream)
 end
 
-local function send_template(template, ...)
+local function send_template(template, stream, ...)
   local subts = {}
   local count = select("#", ...)
   for i = 1, count do
@@ -128,32 +167,40 @@ local function send_template(template, ...)
     table.insert(subts, encode_text(text))
   end
 
-  template.stream = true
+  if stream then
+    template.stream = true
+  end
+
   local body_content = string.format(vim.fn.json_encode(template), unpack(subts))
-  return send_request(body_content)
+
+  if stream then
+    return send_stream_request(body_content)
+  else
+    return send_plain_request(body_content)
+  end
 end
 
 local M = {}
 
 M.ai_improve_grammar = function()
-  send_template(template_body_grammar, current_line())
+  send_template(template_body_grammar, true, current_line())
 end
 
 M.ai_set_spelllang = function()
-  local content = send_template(template_body_recognize_language, current_line())
+  local content = send_template(template_body_recognize_language, false, current_line())
   if (content) then
     vim.cmd("set spelllang=" .. content)
   end
 end
 
 M.ai_write_minutes = function()
-  send_template(template_body_minutes, visual_selection())
+  send_template(template_body_minutes, true, visual_selection())
 end
 
 M.ai_interactive = function()
   vim.ui.input({ prompt = "Give instructions" }, function(command)
     if command then
-      send_template(template_body_interact, command, visual_selection())
+      send_template(template_body_interact, true, command, visual_selection())
     end
   end)
 end
