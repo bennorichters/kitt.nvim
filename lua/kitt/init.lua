@@ -9,29 +9,19 @@ local template_body_recognize_language = require("kitt.templates.recognize_langu
 local log = require("kitt.log")
 log.trace("kitt log here")
 
-local M = { target_buffer = nil, target_line = nil, ai_buffer = nil }
+local M = { target_buffer = nil, target_line = nil, ai_buffer = nil, ai_window = nil }
 
-vim.api.nvim_create_autocmd({ "BufWinLeave" }, {
-  callback = function()
-    log.trace("AUTOCOMMAND BufWinLeave")
-    if M.target_buffer == vim.fn.bufnr() then
-      M.target_buffer = nil
-      print("closing AI window")
-    else
-      print("Nothing to close")
-    end
+local function ensure_ai_buf_win()
+  M.ai_buffer = M.ai_buffer or vim.api.nvim_create_buf(true, true)
+ if M.ai_window then
+    return
   end
-})
 
-local function new_buffer()
   vim.cmd('vsplit')
-  local win = vim.api.nvim_get_current_win()
-  local buffer = vim.api.nvim_create_buf(true, true)
-  vim.api.nvim_win_set_buf(win, buffer)
+  M.ai_window = vim.api.nvim_get_current_win()
+  vim.api.nvim_win_set_buf(M.ai_window, M.ai_buffer)
   vim.wo.wrap = true
   vim.wo.linebreak = true
-
-  return buffer
 end
 
 local function current_line()
@@ -120,7 +110,7 @@ local function send_stream_request(body_content)
   M.target_line = vim.fn.line(".")
   M.target_buffer = vim.fn.bufnr()
 
-  M.ai_buffer = M.ai_buffer or new_buffer()
+  ensure_ai_buf_win()
   local rw = ResponseWriter:new(nil, M.ai_buffer)
   local on_delta = function(response)
     if response
