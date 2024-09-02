@@ -11,6 +11,18 @@ log.trace("kitt log here")
 
 local M = { target_buffer = nil, target_line = nil, ai_buffer = nil }
 
+vim.api.nvim_create_autocmd({ "BufWinLeave" }, {
+  callback = function()
+    log.trace("AUTOCOMMAND BufWinLeave")
+    if M.target_buffer == vim.fn.bufnr() then
+      M.target_buffer = nil
+      print("closing AI window")
+    else
+      print("Nothing to close")
+    end
+  end
+})
+
 local function new_buffer()
   vim.cmd('vsplit')
   local win = vim.api.nvim_get_current_win()
