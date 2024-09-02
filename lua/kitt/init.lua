@@ -9,8 +9,18 @@ local template_body_recognize_language = require("kitt.templates.recognize_langu
 local log = require("kitt.log")
 log.trace("kitt log here")
 
-local line = -1
-local buffer = -1
+local M = { target_buffer = nil, target_line = nil, ai_buffer = nil }
+
+local function new_buffer()
+  vim.cmd('vsplit')
+  local win = vim.api.nvim_get_current_win()
+  local buffer = vim.api.nvim_create_buf(true, true)
+  vim.api.nvim_win_set_buf(win, buffer)
+  vim.wo.wrap = true
+  vim.wo.linebreak = true
+
+  return buffer
+end
 
 local function current_line()
   local line_number = vim.fn.line(".")
@@ -43,7 +53,7 @@ local function show_options()
     if choice == "replace" then
       local content = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
       local txt = table.concat(content, "\n")
-      vim.api.nvim_buf_set_lines(buffer, line - 1, line, false, { txt })
+      vim.api.nvim_buf_set_lines(M.target_buffer, M.target_line - 1, M.target_line, false, { txt })
     end
   end)
 end
@@ -95,10 +105,11 @@ local function send_plain_request(body_content)
 end
 
 local function send_stream_request(body_content)
-  line = vim.fn.line(".")
-  buffer = vim.fn.bufnr()
+  M.target_line = vim.fn.line(".")
+  M.target_buffer = vim.fn.bufnr()
 
-  local rw = ResponseWriter:new()
+  M.ai_buffer = M.ai_buffer or new_buffer()
+  local rw = ResponseWriter:new(nil, M.ai_buffer)
   local on_delta = function(response)
     if response
         and response.choices
@@ -144,8 +155,6 @@ local function send_template(template, stream, ...)
     return send_plain_request(body_content)
   end
 end
-
-local M = {}
 
 M.ai_improve_grammar = function()
   send_template(template_body_grammar, true, current_line())

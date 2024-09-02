@@ -1,18 +1,12 @@
 local log = require("kitt.log")
 
-local ResponseWriter = { buffer = nil, line = 0, content = "" }
-function ResponseWriter:new(obj)
+local ResponseWriter = { line = 0, content = "" }
+function ResponseWriter:new(obj, buffer)
   obj = obj or {}
   setmetatable(obj, self)
   self.__index = self
 
-  vim.cmd('vsplit')
-  local win = vim.api.nvim_get_current_win()
-  obj.buffer = vim.api.nvim_create_buf(true, true)
-  vim.api.nvim_win_set_buf(win, obj.buffer)
-  vim.wo.wrap = true
-  vim.wo.linebreak = true
-
+  obj.buffer = buffer
   return obj
 end
 
