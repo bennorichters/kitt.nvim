@@ -13,7 +13,7 @@ local M = { target_buffer = nil, target_line = nil, ai_buffer = nil, ai_window =
 
 local function ensure_ai_buf_win()
   M.ai_buffer = M.ai_buffer or vim.api.nvim_create_buf(true, true)
- if M.ai_window then
+  if M.ai_window and vim.api.nvim_win_get_buf(M.ai_window) == M.ai_buffer then
     return
   end
 
@@ -40,6 +40,7 @@ local function visual_selection()
   else
     lines[n_lines] = string.sub(lines[n_lines], 1, s_end[3])
   end
+
   return table.concat(lines, "\n")
 end
 
