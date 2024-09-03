@@ -126,7 +126,7 @@ local function send_stream_request(body_content)
   local stream = {
     stream = vim.schedule_wrap(
       function(_, data, _)
-        local raw_message = string.gsub(data, "^data: ", "")
+        local raw_message = data:gsub("^data: ", "")
         if raw_message == "[DONE]" then
           show_options()
         elseif (string.len(data) > 6) then
