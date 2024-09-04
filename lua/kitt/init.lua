@@ -125,7 +125,12 @@ local function send_stream_request(body_content)
 
   local stream = {
     stream = vim.schedule_wrap(
-      function(_, data, _)
+      function(error, data)
+        if error then
+          log.fmt_debug("stream callback: error=%s, data=%s", error, data)
+        else
+          log.fmt_trace("stream callback: data=%s", data)
+        end
         local raw_message = data:gsub("^data: ", "")
         if raw_message == "[DONE]" then
           show_options()
