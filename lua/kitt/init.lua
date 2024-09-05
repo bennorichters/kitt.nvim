@@ -113,30 +113,54 @@ local function send_stream_request(body_content)
 
   ensure_ai_buf_win()
   local rw = ResponseWriter:new(nil, M.ai_buffer)
-  local on_delta = function(response)
-    if response
-        and response.choices
-        and response.choices[1]
-        and response.choices[1].delta
-        and response.choices[1].delta.content then
-      rw:write(response.choices[1].delta.content)
-    end
-  end
 
   local stream = {
     stream = vim.schedule_wrap(
-      function(error, data)
+      function(error, stream_data)
         if error then
-          log.fmt_debug("stream callback: error=%s, data=%s", error, data)
-        else
-          log.fmt_trace("stream callback: data=%s", data)
+          log.fmt_debug("stream callback: error=%s, stream_data=%s", error, stream_data)
+          return
         end
-        local raw_message = data:gsub("^data: ", "")
-        if raw_message == "[DONE]" then
+
+        if stream_data == nil or stream_data == "" then
+          -- log.trace("stream callback: empty stream_data")
+          return
+        end
+
+        if not string.sub(stream_data, 1, 6) == "data: " then
+          log.fmt_debug("stream callback: doesn't start with 'data: ', stream_data=%s", stream_data)
+          return
+        end
+
+        if stream_data == "data: [DONE]" then
+          log.fmt_trace("stream callback: DONE")
           show_options()
-        elseif (string.len(data) > 6) then
-          on_delta(vim.fn.json_decode(string.sub(data, 6)))
+          return
         end
+
+        local status, json = pcall(vim.fn.json_decode, string.sub(stream_data, 7))
+
+        if not status then
+          log.fmt_debug("stream callback: error parsing json. stream_data=%s", stream_data)
+          return
+        end
+
+        if not (json.choices and json.choices[1]) then
+          log.fmt_debug("stream callback: unexpected json. stream_data=%s", stream_data)
+          return
+        end
+
+        if json.choices[1].finish_reason and not (json.choices[1].finish_reason == vim.NIL) then
+          log.fmt_trace("stream callback: finished with reason: %s", json.choices[1].finish_reason)
+          return
+        end
+
+        if not json.choices[1].delta or not json.choices[1].delta.content then
+          log.fmt_debug("stream callback: no delta.content", stream_data)
+          return
+        end
+
+        rw:write(json.choices[1].delta.content)
       end)
   }
 
