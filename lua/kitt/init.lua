@@ -107,6 +107,47 @@ local function send_plain_request(body_content)
   end
 end
 
+local function parse_stream_data(stream_data)
+  if stream_data == nil or stream_data == "" then
+    log.trace("parse_stream_data: empty stream_data")
+    return false, nil
+  end
+
+  if not string.sub(stream_data, 1, 6) == "data: " then
+    log.fmt_debug("parse_stream_data: doesn't start with 'data: ', stream_data=%s", stream_data)
+    return false, nil
+  end
+
+  if stream_data == "data: [DONE]" then
+    log.fmt_trace("parse_stream_data: DONE")
+    return true, nil
+  end
+
+  local status, json = pcall(vim.fn.json_decode, string.sub(stream_data, 7))
+
+  if not status then
+    log.fmt_debug("parse_stream_data: error parsing json. stream_data=%s", stream_data)
+    return false, nil
+  end
+
+  if not (json.choices and json.choices[1]) then
+    log.fmt_debug("parse_stream_data: unexpected json. stream_data=%s", stream_data)
+    return false, nil
+  end
+
+  if json.choices[1].finish_reason and not (json.choices[1].finish_reason == vim.NIL) then
+    log.fmt_trace("parse_stream_data: finished with reason: %s", json.choices[1].finish_reason)
+    return false, nil
+  end
+
+  if not json.choices[1].delta or not json.choices[1].delta.content then
+    log.fmt_debug("parse_stream_data: no delta.content", stream_data)
+    return false, nil
+  end
+
+  return false, json.choices[1].delta.content
+end
+
 local function send_stream_request(body_content)
   M.target_line = vim.fn.line(".")
   M.target_buffer = vim.fn.bufnr()
@@ -118,49 +159,16 @@ local function send_stream_request(body_content)
     stream = vim.schedule_wrap(
       function(error, stream_data)
         if error then
-          log.fmt_debug("stream callback: error=%s, stream_data=%s", error, stream_data)
+          log.fmt_debug("error in stream call back: error=%s, stream_data=%s", error, stream_data)
           return
         end
 
-        if stream_data == nil or stream_data == "" then
-          -- log.trace("stream callback: empty stream_data")
-          return
-        end
-
-        if not string.sub(stream_data, 1, 6) == "data: " then
-          log.fmt_debug("stream callback: doesn't start with 'data: ', stream_data=%s", stream_data)
-          return
-        end
-
-        if stream_data == "data: [DONE]" then
-          log.fmt_trace("stream callback: DONE")
+        local done, content = parse_stream_data(stream_data)
+        if done then
           show_options()
-          return
+        elseif content ~= nil then
+          rw:write(content)
         end
-
-        local status, json = pcall(vim.fn.json_decode, string.sub(stream_data, 7))
-
-        if not status then
-          log.fmt_debug("stream callback: error parsing json. stream_data=%s", stream_data)
-          return
-        end
-
-        if not (json.choices and json.choices[1]) then
-          log.fmt_debug("stream callback: unexpected json. stream_data=%s", stream_data)
-          return
-        end
-
-        if json.choices[1].finish_reason and not (json.choices[1].finish_reason == vim.NIL) then
-          log.fmt_trace("stream callback: finished with reason: %s", json.choices[1].finish_reason)
-          return
-        end
-
-        if not json.choices[1].delta or not json.choices[1].delta.content then
-          log.fmt_debug("stream callback: no delta.content", stream_data)
-          return
-        end
-
-        rw:write(json.choices[1].delta.content)
       end)
   }
 
