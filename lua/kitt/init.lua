@@ -113,7 +113,7 @@ local function parse_stream_data(stream_data)
     return false, nil
   end
 
-  if not string.sub(stream_data, 1, 6) == "data: " then
+  if string.sub(stream_data, 1, 6) ~= "data: " then
     log.fmt_debug("parse_stream_data: doesn't start with 'data: ', stream_data=%s", stream_data)
     return false, nil
   end
@@ -135,7 +135,7 @@ local function parse_stream_data(stream_data)
     return false, nil
   end
 
-  if json.choices[1].finish_reason and not (json.choices[1].finish_reason == vim.NIL) then
+  if json.choices[1].finish_reason and json.choices[1].finish_reason ~= vim.NIL then
     log.fmt_trace("parse_stream_data: finished with reason: %s", json.choices[1].finish_reason)
     return false, nil
   end
