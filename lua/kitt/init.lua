@@ -17,7 +17,7 @@ local function ensure_ai_buf_win()
     return
   end
 
-  vim.cmd('vsplit')
+  vim.cmd("vsplit")
   M.ai_window = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_buf(M.ai_window, M.ai_buffer)
   vim.wo.wrap = true
