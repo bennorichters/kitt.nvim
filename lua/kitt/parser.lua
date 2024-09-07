@@ -1,9 +1,8 @@
-local log = require("kitt.log")
+local log        = require("kitt.log")
+local start_data = "data: "
+local done       = start_data .. "[DONE]"
 
-local start_data  = "data: "
-local done = start_data .. "[DONE]"
-
-return function (stream_data)
+return function(stream_data)
   if stream_data == nil or stream_data == "" then
     log.trace("parse_stream_data: empty stream_data")
     return false, nil
