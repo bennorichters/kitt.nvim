@@ -1,10 +1,13 @@
 local curl = require("plenary.curl")
+
+local parse_stream_data = require("kitt.parser")
 local ResponseWriter = require("kitt.response_writer")
 
 local template_body_grammar = require("kitt.templates.grammar")
 local template_body_interact = require("kitt.templates.interact_with_content")
 local template_body_minutes = require("kitt.templates.minutes")
 local template_body_recognize_language = require("kitt.templates.recognize_language")
+
 
 local log = require("kitt.log")
 log.trace("kitt log here")
@@ -105,47 +108,6 @@ local function send_plain_request(body_content)
   else
     print(vim.inspect(response))
   end
-end
-
-local function parse_stream_data(stream_data)
-  if stream_data == nil or stream_data == "" then
-    log.trace("parse_stream_data: empty stream_data")
-    return false, nil
-  end
-
-  if string.sub(stream_data, 1, 6) ~= "data: " then
-    log.fmt_debug("parse_stream_data: doesn't start with 'data: ', stream_data=%s", stream_data)
-    return false, nil
-  end
-
-  if stream_data == "data: [DONE]" then
-    log.fmt_trace("parse_stream_data: DONE")
-    return true, nil
-  end
-
-  local status, json = pcall(vim.fn.json_decode, string.sub(stream_data, 7))
-
-  if not status then
-    log.fmt_debug("parse_stream_data: error parsing json. stream_data=%s", stream_data)
-    return false, nil
-  end
-
-  if not (json.choices and json.choices[1]) then
-    log.fmt_debug("parse_stream_data: unexpected json. stream_data=%s", stream_data)
-    return false, nil
-  end
-
-  if json.choices[1].finish_reason and json.choices[1].finish_reason ~= vim.NIL then
-    log.fmt_trace("parse_stream_data: finished with reason: %s", json.choices[1].finish_reason)
-    return false, nil
-  end
-
-  if not json.choices[1].delta or not json.choices[1].delta.content then
-    log.fmt_debug("parse_stream_data: no delta.content", stream_data)
-    return false, nil
-  end
-
-  return false, json.choices[1].delta.content
 end
 
 local function send_stream_request(body_content)
