@@ -11,8 +11,9 @@ local T = MiniTest.new_set({
 })
 
 T["ResponseWriter"] = function()
-  child.lua("local rw = ResponseWriter:new()")
-  child.type_keys()
+  local buf = child.api.nvim_create_buf(true, true)
+  child.lua("rw = ResponseWriter:new(nil, " .. buf .. ")")
+  MiniTest.expect.equality(child.lua("return rw.buffer"), buf)
 end
 
 return T
