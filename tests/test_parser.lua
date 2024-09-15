@@ -11,6 +11,7 @@ T["parser"] = function()
   eq({ p("[DONE]") }, { false, nil })
   eq({ p("data: [READY]") }, { false, nil })
   eq({ p('data: {"choices":[{"delta":{"content":"abc"}}]}') }, { false, "abc" })
+  eq({ p('data: {"choices":[{"delta":{"content":"abc"}}]') }, { false, nil })
 end
 
 
