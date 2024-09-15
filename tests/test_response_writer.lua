@@ -1,4 +1,7 @@
 local child = MiniTest.new_child_neovim()
+local eq = MiniTest.expect.equality
+
+local get_lines = function(buf) return child.api.nvim_buf_get_lines(buf, 0, -1, true) end
 
 local T = MiniTest.new_set({
   hooks = {
@@ -13,7 +16,15 @@ local T = MiniTest.new_set({
 T["ResponseWriter"] = function()
   local buf = child.api.nvim_create_buf(true, true)
   child.lua("rw = ResponseWriter:new(nil, " .. buf .. ")")
-  MiniTest.expect.equality(child.lua("return rw.buffer"), buf)
+
+  child.lua("rw:write('abc')")
+  eq(get_lines(buf), { "abc" })
+
+  child.lua("rw:write('def')")
+  eq(get_lines(buf), { "abcdef" })
+
+  child.lua("rw:write('g\\nhi')")
+  eq(get_lines(buf), { "abcdefg", "hi" })
 end
 
 return T
