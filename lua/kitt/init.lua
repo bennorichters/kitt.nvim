@@ -1,6 +1,7 @@
-local curl = require("plenary.curl")
-
+local ensure_ai_buf_win = require("kitt.buffer")
 local parse_stream_data = require("kitt.parser")
+local send_request = require("kitt.send_request")
+
 local ResponseWriter = require("kitt.response_writer")
 
 local template_body_grammar = require("kitt.templates.grammar")
@@ -13,19 +14,6 @@ local log = require("kitt.log")
 log.trace("kitt log here")
 
 local M = { target_buffer = nil, target_line = nil, ai_buffer = nil, ai_window = nil }
-
-local function ensure_ai_buf_win()
-  M.ai_buffer = M.ai_buffer or vim.api.nvim_create_buf(true, true)
-  if M.ai_window and vim.api.nvim_win_get_buf(M.ai_window) == M.ai_buffer then
-    return
-  end
-
-  vim.cmd("vsplit")
-  M.ai_window = vim.api.nvim_get_current_win()
-  vim.api.nvim_win_set_buf(M.ai_window, M.ai_buffer)
-  vim.wo.wrap = true
-  vim.wo.linebreak = true
-end
 
 local function current_line()
   local line_number = vim.fn.line(".")
@@ -64,40 +52,6 @@ local function show_options()
   end)
 end
 
-local function table_concat(...)
-  local result = {}
-
-  for _, tbl in ipairs({ ... }) do
-    for k, v in pairs(tbl) do
-      if type(k) ~= "number" then
-        result[k] = v
-      else
-        table.insert(result, v)
-      end
-    end
-  end
-
-  return result
-end
-
-local function send_request(body_content, extra_opts)
-  local endpoint = os.getenv("OPENAI_ENDPOINT")
-  local key = os.getenv("OPENAI_API_KEY")
-
-  local opts = {
-    body = body_content,
-    headers = {
-      content_type = "application/json",
-      api_key = key,
-    },
-  }
-  if extra_opts then
-    opts = table_concat(opts, extra_opts)
-  end
-
-  return curl.post(endpoint, opts)
-end
-
 local function send_plain_request(body_content)
   local response = send_request(body_content, { timeout = 6000 })
 
@@ -114,7 +68,7 @@ local function send_stream_request(body_content)
   M.target_line = vim.fn.line(".")
   M.target_buffer = vim.fn.bufnr()
 
-  ensure_ai_buf_win()
+  M.ai_buffer, M.ai_window = ensure_ai_buf_win(M.ai_buffer, M.ai_window)
   local rw = ResponseWriter:new(nil, M.ai_buffer)
 
   local stream = {
