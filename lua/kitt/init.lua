@@ -1,4 +1,3 @@
-local ensure_ai_buf_win = require("kitt.buffer")
 local parse_stream_data = require("kitt.parser")
 local send_request = require("kitt.send_request")
 
@@ -70,9 +69,7 @@ local function send_stream_request(body_content)
   target_line = vim.fn.line(".")
   target_buffer = vim.fn.bufnr()
 
-  local ai_buffer, ai_window
-  ai_buffer, ai_window = ensure_ai_buf_win(ai_buffer, ai_window)
-  local rw = ResponseWriter:new(nil, ai_buffer)
+  local rw = ResponseWriter:new()
 
   local stream = {
     stream = vim.schedule_wrap(
