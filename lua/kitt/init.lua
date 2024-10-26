@@ -9,11 +9,11 @@ local template_body_interact = require("kitt.templates.interact_with_content")
 local template_body_minutes = require("kitt.templates.minutes")
 local template_body_recognize_language = require("kitt.templates.recognize_language")
 
-
 local log = require("kitt.log")
 log.trace("kitt log here")
 
-local M = { target_buffer = nil, target_line = nil, ai_buffer = nil, ai_window = nil }
+local target_buffer = nil
+local target_line = nil
 
 local function current_line()
   local line_number = vim.fn.line(".")
@@ -41,13 +41,15 @@ local function encode_text(text)
 end
 
 local function show_options()
+  assert(target_buffer ~= nil)
+  assert(target_line ~= nil)
   vim.ui.select({ "replace", "ignore" }, {
     prompt = "Choose what to do with the generated text"
   }, function(choice)
     if choice == "replace" then
       local content = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
       local txt = table.concat(content, "\n")
-      vim.api.nvim_buf_set_lines(M.target_buffer, M.target_line - 1, M.target_line, false, { txt })
+      vim.api.nvim_buf_set_lines(target_buffer, target_line - 1, target_line, false, { txt })
     end
   end)
 end
@@ -65,11 +67,12 @@ local function send_plain_request(body_content)
 end
 
 local function send_stream_request(body_content)
-  M.target_line = vim.fn.line(".")
-  M.target_buffer = vim.fn.bufnr()
+  target_line = vim.fn.line(".")
+  target_buffer = vim.fn.bufnr()
 
-  M.ai_buffer, M.ai_window = ensure_ai_buf_win(M.ai_buffer, M.ai_window)
-  local rw = ResponseWriter:new(nil, M.ai_buffer)
+  local ai_buffer, ai_window
+  ai_buffer, ai_window = ensure_ai_buf_win(ai_buffer, ai_window)
+  local rw = ResponseWriter:new(nil, ai_buffer)
 
   local stream = {
     stream = vim.schedule_wrap(
@@ -111,6 +114,8 @@ local function send_template(template, stream, ...)
     return send_plain_request(body_content)
   end
 end
+
+local M = {}
 
 M.ai_improve_grammar = function()
   send_template(template_body_grammar, true, current_line())
