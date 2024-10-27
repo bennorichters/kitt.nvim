@@ -8,7 +8,7 @@ local content = ""
 local function ensure_buf_win()
   buf = buf or vim.api.nvim_create_buf(true, true)
   if win and vim.api.nvim_win_get_buf(win) == buf then
-    return buf, win
+    return
   end
 
   vim.cmd("vsplit")
