@@ -1,6 +1,11 @@
 local log = require("kitt.log")
 
-local function ensure_buf_win(buf, win)
+local buf = nil
+local win = nil
+local line = 0
+local content = ""
+
+local function ensure_buf_win()
   buf = buf or vim.api.nvim_create_buf(true, true)
   if win and vim.api.nvim_win_get_buf(win) == buf then
     return buf, win
@@ -11,42 +16,28 @@ local function ensure_buf_win(buf, win)
   vim.api.nvim_win_set_buf(win, buf)
   vim.wo.wrap = true
   vim.wo.linebreak = true
-
-  return buf, win
 end
 
-local ResponseWriter = { line = 0, content = "" }
-function ResponseWriter:new(obj)
-  obj = obj or {}
-  setmetatable(obj, self)
-  self.__index = self
+return function(delta)
+  log.fmt_trace("response_writer delta=%s", delta)
 
-  obj.buffer = nil
-  obj.win = nil
-
-  return obj
-end
-
-function ResponseWriter:write(delta)
-  log.fmt_trace("ResponseWriter:write delta=%s", delta)
-
-  self.buffer, self.win = ensure_buf_win(self.buffer, self.win)
+  ensure_buf_win()
+  assert(buf ~= nil)
+  assert(win ~= nil)
 
   delta:gsub(".", function(c)
     if c == "\n" then
-      log.fmt_trace("ResponseWriter:write line=%s content=%s", self.line, self.content)
-      vim.api.nvim_buf_set_lines(self.buffer, self.line, -1, false, { self.content })
-      self.line = self.line + 1
-      self.content = ""
+      log.fmt_trace("response_writer line=%s content=%s", line, content)
+      vim.api.nvim_buf_set_lines(buf, line, -1, false, { content })
+      line = line + 1
+      content = ""
     else
-      self.content = self.content .. c
+      content = content .. c
     end
   end)
 
-  if self.content then
-    log.fmt_trace("ResponseWriter:write -write rest- line=%s content=%s", self.line, self.content)
-    vim.api.nvim_buf_set_lines(self.buffer, self.line, -1, false, { self.content })
+  if content then
+    log.fmt_trace("response_writer -write rest- line=%s content=%s", line, content)
+    vim.api.nvim_buf_set_lines(buf, line, -1, false, { content })
   end
 end
-
-return ResponseWriter
