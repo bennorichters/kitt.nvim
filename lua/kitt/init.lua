@@ -80,7 +80,8 @@ local function send_stream_request(body_content)
         if done then
           show_options()
         elseif content ~= nil then
-          response_writer(content)
+          local buf = response_writer.ensure_buf_win()
+          response_writer.write(content, buf)
         end
       end)
   }

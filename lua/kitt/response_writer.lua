@@ -1,29 +1,29 @@
 local log = require("kitt.log")
 
-local buf = nil
-local win = nil
 local line = 0
 local content = ""
 
-local function ensure_buf_win()
-  buf = buf or vim.api.nvim_create_buf(true, true)
-  if win and vim.api.nvim_win_get_buf(win) == buf then
-    return
+local buf_win_state = { buf = nil, win = nil }
+
+local rw = {}
+
+rw.ensure_buf_win = function()
+  buf_win_state.buf = buf_win_state.buf or vim.api.nvim_create_buf(true, true)
+  if buf_win_state.win and vim.api.nvim_win_get_buf(buf_win_state.win) == buf_win_state.buf then
+    return buf_win_state.buf
   end
 
   vim.cmd("vsplit")
-  win = vim.api.nvim_get_current_win()
-  vim.api.nvim_win_set_buf(win, buf)
+  buf_win_state.win = vim.api.nvim_get_current_win()
+  vim.api.nvim_win_set_buf(buf_win_state.win, buf_win_state.buf)
   vim.wo.wrap = true
   vim.wo.linebreak = true
+
+  return buf_win_state.buf
 end
 
-return function(delta)
+rw.write = function(delta, buf)
   log.fmt_trace("response_writer delta=%s", delta)
-
-  ensure_buf_win()
-  assert(buf ~= nil)
-  assert(win ~= nil)
 
   delta:gsub(".", function(c)
     if c == "\n" then
@@ -41,3 +41,5 @@ return function(delta)
     vim.api.nvim_buf_set_lines(buf, line, -1, false, { content })
   end
 end
+
+return rw
