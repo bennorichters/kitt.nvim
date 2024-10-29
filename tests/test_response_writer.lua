@@ -7,7 +7,7 @@ local T = MiniTest.new_set({
   hooks = {
     pre_case = function()
       child.restart({ "-u", "scripts/minimal_init.lua" })
-      child.lua([[ResponseWriter = require("kitt.response_writer")]])
+      child.lua([[rw = require("kitt.response_writer")]])
     end,
     post_once = child.stop,
   },
@@ -15,15 +15,14 @@ local T = MiniTest.new_set({
 
 T["ResponseWriter"] = function()
   local buf = child.api.nvim_create_buf(true, true)
-  child.lua("rw = ResponseWriter:new(nil, " .. buf .. ")")
 
-  child.lua("rw:write('abc')")
+  child.lua("rw.write('abc', " .. buf .. ")")
   eq(get_lines(buf), { "abc" })
 
-  child.lua("rw:write('def')")
+  child.lua("rw.write('def', " .. buf .. ")")
   eq(get_lines(buf), { "abcdef" })
 
-  child.lua("rw:write('g\\nhi')")
+  child.lua("rw.write('g\\nhi', " .. buf .. ")")
   eq(get_lines(buf), { "abcdefg", "hi" })
 end
 
