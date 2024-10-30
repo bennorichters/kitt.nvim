@@ -13,7 +13,7 @@ local T = MiniTest.new_set({
   },
 })
 
-T["ResponseWriter"] = function()
+T["response_writer.write"] = function()
   local buf = child.api.nvim_create_buf(true, true)
 
   child.lua("rw.write('abc', " .. buf .. ")")
