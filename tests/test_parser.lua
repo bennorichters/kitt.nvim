@@ -14,5 +14,4 @@ T["parser"] = function()
   eq({ p('data: {"choices":[{"delta":{"content":"abc"}}]') }, { false, nil })
 end
 
-
 return T
