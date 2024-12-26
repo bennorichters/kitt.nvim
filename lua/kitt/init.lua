@@ -1,8 +1,10 @@
 local parse_stream_data = require("kitt.parser")
 local response_writer = require("kitt.response_writer")
-local curl = require("plenary.curl")
 local send_request_factory = require("kitt.send_request")
-local send_request = send_request_factory(curl.post)
+-- local post = require("plenary.curl").post
+-- local send_request = send_request_factory(post)
+local post = require("kitt.mock_post")
+local send_request = send_request_factory(post)
 
 local template_body_grammar = require("kitt.templates.grammar")
 local template_body_interact = require("kitt.templates.interact_with_content")
