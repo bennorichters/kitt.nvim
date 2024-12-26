@@ -1,4 +1,5 @@
-local curl = require("plenary.curl")
+local endpoint = os.getenv("OPENAI_ENDPOINT")
+local key = os.getenv("OPENAI_API_KEY")
 
 local function table_concat(...)
   local result = {}
@@ -16,20 +17,20 @@ local function table_concat(...)
   return result
 end
 
-return function(body_content, extra_opts)
-  local endpoint = os.getenv("OPENAI_ENDPOINT")
-  local key = os.getenv("OPENAI_API_KEY")
+return function(post)
+  return function(body_content, extra_opts)
+    local opts = {
+      body = body_content,
+      headers = {
+        content_type = "application/json",
+        api_key = key,
+      },
+    }
 
-  local opts = {
-    body = body_content,
-    headers = {
-      content_type = "application/json",
-      api_key = key,
-    },
-  }
-  if extra_opts then
-    opts = table_concat(opts, extra_opts)
+    if extra_opts then
+      opts = table_concat(opts, extra_opts)
+    end
+
+    return post(endpoint, opts)
   end
-
-  return curl.post(endpoint, opts)
 end

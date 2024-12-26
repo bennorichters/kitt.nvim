@@ -1,6 +1,8 @@
 local parse_stream_data = require("kitt.parser")
 local response_writer = require("kitt.response_writer")
-local send_request = require("kitt.send_request")
+local curl = require("plenary.curl")
+local send_request_factory = require("kitt.send_request")
+local send_request = send_request_factory(curl.post)
 
 local template_body_grammar = require("kitt.templates.grammar")
 local template_body_interact = require("kitt.templates.interact_with_content")
@@ -68,6 +70,7 @@ local function send_stream_request(body_content)
   target_line = vim.fn.line(".")
   target_buffer = vim.fn.bufnr()
 
+  local buf = response_writer.ensure_buf_win()
   local stream = {
     stream = vim.schedule_wrap(
       function(error, stream_data)
@@ -80,7 +83,6 @@ local function send_stream_request(body_content)
         if done then
           show_options()
         elseif content ~= nil then
-          local buf = response_writer.ensure_buf_win()
           response_writer.write(content, buf)
         end
       end)
