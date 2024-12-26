@@ -1,0 +1,22 @@
+local new_set = MiniTest.new_set
+local eq = MiniTest.expect.equality
+local neq = MiniTest.expect.no_equality
+local factory = require("kitt.send_request")
+
+local T = new_set()
+
+T["send_request"] = function()
+  local function post(endpoint, opts)
+    neq(endpoint, nil)
+    neq(endpoint, "")
+
+    eq(opts.body, "body_content")
+    eq(opts.timeout, 100)
+  end
+
+  local sr = factory(post)
+
+  sr("body_content", { timeout = 100 })
+end
+
+return T
