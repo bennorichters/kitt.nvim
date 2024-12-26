@@ -2,7 +2,6 @@ local parse_stream_data = require("kitt.parser")
 local response_writer = require("kitt.response_writer")
 local send_request_factory = require("kitt.send_request")
 -- local post = require("plenary.curl").post
--- local send_request = send_request_factory(post)
 local post = require("kitt.mock_post")
 local send_request = send_request_factory(post)
 
