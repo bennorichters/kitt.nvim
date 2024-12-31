@@ -1,9 +1,12 @@
+local CFG = {
+  post = "curl",
+  timeout = 6000
+}
+
 local parse_stream_data = require("kitt.parser")
 local response_writer = require("kitt.response_writer")
 local send_request_factory = require("kitt.send_request")
--- local post = require("plenary.curl").post
-local post = require("kitt.mock_post")
-local send_request = send_request_factory(post)
+local SEND_REQUEST
 
 local template_body_grammar = require("kitt.templates.grammar")
 local template_body_interact = require("kitt.templates.interact_with_content")
@@ -49,14 +52,13 @@ local function show_options()
   }, function(choice)
     if choice == "replace" then
       local content = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
-      local txt = table.concat(content, "\n")
-      vim.api.nvim_buf_set_lines(target_buffer, target_line - 1, target_line, false, { txt })
+      vim.api.nvim_buf_set_lines(target_buffer, target_line, target_line, false, content)
     end
   end)
 end
 
 local function send_plain_request(body_content)
-  local response = send_request(body_content, { timeout = 6000 })
+  local response = SEND_REQUEST(body_content, { timeout = CFG.timeout })
 
   if (response.status == 200) then
     local response_body = vim.fn.json_decode(response.body)
@@ -89,7 +91,7 @@ local function send_stream_request(body_content)
       end)
   }
 
-  send_request(body_content, stream)
+  SEND_REQUEST(body_content, stream)
 end
 
 local function send_template(template, stream, ...)
@@ -115,6 +117,23 @@ end
 
 local M = {}
 
+M.setup = function(user_cfg)
+  CFG = vim.tbl_extend('force', CFG, user_cfg or {})
+
+  local post
+
+  if CFG.post == "curl" then
+    post = require("plenary.curl").post
+  elseif CFG.post == "mock" then
+    post = require("kitt.mock_post")
+  else
+    log.fmt_error("Unknown 'post' option")
+    error("Unknown 'post' option")
+  end
+
+  SEND_REQUEST = send_request_factory(post)
+end
+
 M.ai_improve_grammar = function()
   send_template(template_body_grammar, true, current_line())
 end
@@ -136,6 +155,10 @@ M.ai_interactive = function()
       send_template(template_body_interact, true, command, visual_selection())
     end
   end)
+end
+
+M.test = function()
+  vim.api.nvim_buf_set_lines(0, 0, 5, false, { "Dit is een test", "Nog een regel", "\n" })
 end
 
 return M
