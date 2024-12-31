@@ -157,8 +157,4 @@ M.ai_interactive = function()
   end)
 end
 
-M.test = function()
-  vim.api.nvim_buf_set_lines(0, 0, 5, false, { "Dit is een test", "Nog een regel", "\n" })
-end
-
 return M
