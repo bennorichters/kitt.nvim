@@ -3,6 +3,7 @@ local CFG = {
   timeout = 6000
 }
 
+local show_options = require("kitt.options")
 local parse_stream_data = require("kitt.parser")
 local response_writer = require("kitt.response_writer")
 local send_request_factory = require("kitt.send_request")
@@ -44,19 +45,6 @@ local function encode_text(text)
   return string.sub(encoded_text, 2, string.len(encoded_text) - 1)
 end
 
-local function show_options()
-  assert(target_buffer ~= nil)
-  assert(target_line ~= nil)
-  vim.ui.select({ "replace", "ignore" }, {
-    prompt = "Choose what to do with the generated text"
-  }, function(choice)
-    if choice == "replace" then
-      local content = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
-      vim.api.nvim_buf_set_lines(target_buffer, target_line, target_line, false, content)
-    end
-  end)
-end
-
 local function send_plain_request(body_content)
   local response = SEND_REQUEST(body_content, { timeout = CFG.timeout })
 
@@ -84,7 +72,8 @@ local function send_stream_request(body_content)
 
         local done, content = parse_stream_data(stream_data)
         if done then
-          show_options()
+          local buffer_text = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
+          show_options(target_buffer, target_line, buffer_text)
         elseif content ~= nil then
           response_writer.write(content, buf)
         end
