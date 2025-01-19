@@ -1,0 +1,4 @@
+### List all assistants
+GET https://{{OPENAI_RESOURCE_NAME}}.openai.azure.com/openai/assistants?api-version={{OPENAI_API_VERSION}}
+Content-Type: application/json
+api-key: {{OPENAI_API_KEY}}
