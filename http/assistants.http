@@ -2,3 +2,15 @@
 GET https://{{OPENAI_RESOURCE_NAME}}.openai.azure.com/openai/assistants?api-version={{OPENAI_API_VERSION}}
 Content-Type: application/json
 api-key: {{OPENAI_API_KEY}}
+
+### Retrieve assistant
+@assistant_id=someid1
+GET https://{{OPENAI_RESOURCE_NAME}}.openai.azure.com/openai/assistants/{{assistant_id}}?api-version={{OPENAI_API_VERSION}}
+Content-Type: application/json
+api-key: {{OPENAI_API_KEY}}
+
+### Delete assistant
+@assistant_id=someid2
+DELETE https://{{OPENAI_RESOURCE_NAME}}.openai.azure.com/openai/assistants/{{assistant_id}}?api-version={{OPENAI_API_VERSION}}
+Content-Type: application/json
+api-key: {{OPENAI_API_KEY}}
