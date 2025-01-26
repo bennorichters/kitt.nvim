@@ -47,3 +47,6 @@ lua/
 
 # Mac
 .DS_Store
+
+# Notes
+notes.md
