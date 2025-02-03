@@ -42,9 +42,6 @@ luac.out
 # Dependencies
 deps/
 
-# Lua run files
-lua/
-
 # Mac
 .DS_Store
 
