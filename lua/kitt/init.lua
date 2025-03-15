@@ -73,6 +73,7 @@ local function send_stream_request(body_content)
         local done, content = parse_stream_data(stream_data)
         if done then
           local buffer_text = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
+          vim.cmd("redraw")
           show_options(target_buffer, target_line, buffer_text)
         elseif content ~= nil then
           response_writer.write(content, buf)
