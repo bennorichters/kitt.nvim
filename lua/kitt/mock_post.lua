@@ -1,11 +1,11 @@
-local data = 'data: {"choices":[{"delta":{"content":"Stream Mock\\n"}}]}'
+local data = 'data: {"choices":[{"delta":{"content":"%d Stream Mock\\n"}}]}'
 local last = 'data: {"choices":[{"delta":{"content":"end"}}]}'
 local done = "data: [DONE]"
 
 return function(_, opts)
   if opts.stream then
-    for _ = 1, 10 do
-      opts.stream(nil, data)
+    for i = 1, 5 do
+      opts.stream(nil, string.format(data, i))
     end
     opts.stream(nil, last)
     opts.stream(nil, done)
