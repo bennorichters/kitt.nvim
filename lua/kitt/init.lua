@@ -58,7 +58,7 @@ local function send_plain_request(body_content)
 end
 
 local function send_stream_request(body_content)
-  target_line = vim.fn.line(".")
+  target_line = vim.fn.line(".") - 1
   target_buffer = vim.fn.bufnr()
 
   local buf = response_writer.ensure_buf_win()
