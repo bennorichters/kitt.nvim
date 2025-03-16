@@ -3,7 +3,7 @@ local CFG = {
   timeout = 6000
 }
 
-local options = require("kitt.options")
+local text_prompt = require("kitt.text_prompt")
 local parse_stream_data = require("kitt.parser")
 local response_writer = require("kitt.response_writer")
 local send_request_factory = require("kitt.send_request")
@@ -55,7 +55,7 @@ local function send_plain_request(body_content)
 end
 
 local function send_stream_request(body_content)
-  local select = options.process_buf_text(options.prompt)
+  local select = text_prompt.process_buf_text(text_prompt.prompt)
 
   local buf = response_writer.ensure_buf_win()
   local stream = {

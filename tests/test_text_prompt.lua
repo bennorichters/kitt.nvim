@@ -7,7 +7,7 @@ local T = MiniTest.new_set({
   hooks = {
     pre_case = function()
       child.restart({ "-u", "scripts/minimal_init.lua" })
-      child.lua("prompt = require('kitt.options').prompt")
+      child.lua("prompt = require('kitt.text_prompt').prompt")
     end,
     post_once = child.stop,
   },
