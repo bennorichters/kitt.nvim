@@ -1,6 +1,6 @@
 local new_set = MiniTest.new_set
 local eq = MiniTest.expect.equality
-local p = require("kitt.parser")
+local p = require("kitt.stream").parse
 
 local T = new_set()
 
