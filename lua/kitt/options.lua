@@ -1,6 +1,6 @@
 local result = {}
 
-result.select = function(target_buffer, target_line, content)
+result.prompt = function(target_buffer, target_line, content)
   vim.ui.select({ "replace", "ignore" }, {
     prompt = "Choose what to do with the generated text"
   }, function(choice)
@@ -11,17 +11,17 @@ result.select = function(target_buffer, target_line, content)
 end
 
 
-result.prepare_select = function(select)
+result.process_buf_text = function(prompt)
   local target_line = vim.fn.line(".") - 1
   local target_buffer = vim.fn.bufnr()
 
-  local aap = function()
+  local select_with_result = function()
     vim.cmd("redraw")
     local buffer_text = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
-    select(target_buffer, target_line, buffer_text)
+    prompt(target_buffer, target_line, buffer_text)
   end
 
-  return aap
+  return select_with_result
 end
 
 return result

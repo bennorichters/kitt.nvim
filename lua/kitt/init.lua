@@ -4,8 +4,6 @@ local CFG = {
 }
 
 local options = require("kitt.options")
-local show_options = options.select
-local prepare_select = options.prepare_select
 local parse_stream_data = require("kitt.parser")
 local response_writer = require("kitt.response_writer")
 local send_request_factory = require("kitt.send_request")
@@ -57,7 +55,7 @@ local function send_plain_request(body_content)
 end
 
 local function send_stream_request(body_content)
-  local aap = prepare_select(show_options)
+  local select = options.process_buf_text(options.prompt)
 
   local buf = response_writer.ensure_buf_win()
   local stream = {
@@ -70,7 +68,7 @@ local function send_stream_request(body_content)
 
         local done, content = parse_stream_data(stream_data)
         if done then
-          aap()
+          select()
         elseif content ~= nil then
           response_writer.write(content, buf)
         end
