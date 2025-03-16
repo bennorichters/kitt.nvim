@@ -1,10 +1,10 @@
 local log        = require("kitt.log")
 local start_data = "data: "
-local done       = start_data .. "[DONE]"
+local done_data  = start_data .. "[DONE]"
 
-local result = {}
+local result     = {}
 
-result.parse = function(stream_data)
+result.parse     = function(stream_data)
   if stream_data == nil or stream_data == "" then
     log.trace("parse_stream_data: empty stream_data")
     return false, nil
@@ -15,7 +15,7 @@ result.parse = function(stream_data)
     return false, nil
   end
 
-  if stream_data == done then
+  if stream_data == done_data then
     log.fmt_trace("parse_stream_data: DONE")
     return true, nil
   end
@@ -43,6 +43,23 @@ result.parse = function(stream_data)
   end
 
   return false, json.choices[1].delta.content
+end
+
+
+result.process_wrap = function(parse, select, write, buf)
+  return function(error, stream_data)
+    if error then
+      log.fmt_debug("error in stream call back: error=%s, stream_data=%s", error, stream_data)
+      return
+    end
+
+    local done, content = parse(stream_data)
+    if done then
+      select()
+    elseif content ~= nil then
+      write(content, buf)
+    end
+  end
 end
 
 return result

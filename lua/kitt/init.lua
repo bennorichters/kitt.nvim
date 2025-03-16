@@ -4,7 +4,7 @@ local CFG = {
 }
 
 local text_prompt = require("kitt.text_prompt")
-local stream = require("kitt.stream")
+local stream_handler = require("kitt.stream")
 local response_writer = require("kitt.response_writer")
 local send_request_factory = require("kitt.send_request")
 local SEND_REQUEST
@@ -57,19 +57,9 @@ end
 local function send_stream_request(body_content)
   local select = text_prompt.process_buf_text(text_prompt.prompt)
   local buf = response_writer.ensure_buf_win()
-  local process_stream = function(error, stream_data)
-    if error then
-      log.fmt_debug("error in stream call back: error=%s, stream_data=%s", error, stream_data)
-      return
-    end
-
-    local done, content = stream.parse(stream_data)
-    if done then
-      select()
-    elseif content ~= nil then
-      response_writer.write(content, buf)
-    end
-  end
+  local process_stream = stream_handler.process_wrap(
+    stream_handler.parse, select, response_writer.write, buf
+  )
 
   local stream = { stream = vim.schedule_wrap(process_stream) }
 
