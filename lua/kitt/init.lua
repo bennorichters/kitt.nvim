@@ -1,13 +1,7 @@
-local CFG = {
-  post = "curl",
-  timeout = 6000
-}
-
 local text_prompt = require("kitt.text_prompt")
 local stream_handler = require("kitt.stream")
 local response_writer = require("kitt.response_writer")
 local send_request_factory = require("kitt.send_request")
-local SEND_REQUEST
 
 local template_body_grammar = require("kitt.templates.grammar")
 local template_body_interact = require("kitt.templates.interact_with_content")
@@ -16,6 +10,13 @@ local template_body_recognize_language = require("kitt.templates.recognize_langu
 
 local log = require("kitt.log")
 log.trace("kitt log here")
+
+local CFG = {
+  post = "curl",
+  timeout = 6000
+}
+
+local send_request
 
 local function current_line()
   local line_number = vim.fn.line(".")
@@ -43,7 +44,7 @@ local function encode_text(text)
 end
 
 local function send_plain_request(body_content)
-  local response = SEND_REQUEST(body_content, { timeout = CFG.timeout })
+  local response = send_request(body_content, { timeout = CFG.timeout })
 
   if (response.status == 200) then
     local response_body = vim.fn.json_decode(response.body)
@@ -63,7 +64,7 @@ local function send_stream_request(body_content)
 
   local stream = { stream = vim.schedule_wrap(process_stream) }
 
-  SEND_REQUEST(body_content, stream)
+  send_request(body_content, stream)
 end
 
 local function send_template(template, stream, ...)
@@ -103,7 +104,7 @@ M.setup = function(user_cfg)
     error("Unknown 'post' option")
   end
 
-  SEND_REQUEST = send_request_factory(post)
+  send_request = send_request_factory(post)
 end
 
 M.ai_improve_grammar = function()
