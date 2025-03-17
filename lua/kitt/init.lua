@@ -4,10 +4,10 @@ local stream_handler = require("kitt.stream")
 local response_writer = require("kitt.response_writer")
 local send_request_factory = require("kitt.send_request")
 
-local template_body_grammar = require("kitt.templates.grammar")
-local template_body_interact = require("kitt.templates.interact_with_content")
-local template_body_minutes = require("kitt.templates.minutes")
-local template_body_recognize_language = require("kitt.templates.recognize_language")
+local tpl_body_grammar = require("kitt.templates.grammar")
+local tpl_body_interact = require("kitt.templates.interact_with_content")
+local tpl_body_minutes = require("kitt.templates.minutes")
+local tpl_body_recognize_language = require("kitt.templates.recognize_language")
 
 local log = require("kitt.log")
 log.trace("kitt log here")
@@ -89,24 +89,24 @@ M.setup = function(user_cfg)
 end
 
 M.ai_improve_grammar = function()
-  send_template(template_body_grammar, true, buffer_helper.current_line())
+  send_template(tpl_body_grammar, true, buffer_helper.current_line())
 end
 
 M.ai_set_spelllang = function()
-  local content = send_template(template_body_recognize_language, false, buffer_helper.current_line())
+  local content = send_template(tpl_body_recognize_language, false, buffer_helper.current_line())
   if (content) then
     vim.cmd("set spelllang=" .. content)
   end
 end
 
 M.ai_write_minutes = function()
-  send_template(template_body_minutes, true, buffer_helper.visual_selection())
+  send_template(tpl_body_minutes, true, buffer_helper.visual_selection())
 end
 
 M.ai_interactive = function()
   vim.ui.input({ prompt = "Give instructions" }, function(command)
     if command then
-      send_template(template_body_interact, true, command, buffer_helper.visual_selection())
+      send_template(tpl_body_interact, true, command, buffer_helper.visual_selection())
     end
   end)
 end
