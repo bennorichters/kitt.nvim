@@ -1,3 +1,4 @@
+local buffer_helper = require("kitt.buffer_helper")
 local text_prompt = require("kitt.text_prompt")
 local stream_handler = require("kitt.stream")
 local response_writer = require("kitt.response_writer")
@@ -17,26 +18,6 @@ local CFG = {
 }
 
 local send_request
-
-local function current_line()
-  local line_number = vim.fn.line(".")
-  return vim.api.nvim_buf_get_lines(0, line_number - 1, line_number, false)[1]
-end
-
-local function visual_selection()
-  local s_start = vim.fn.getpos("'<")
-  local s_end = vim.fn.getpos("'>")
-  local n_lines = math.abs(s_end[2] - s_start[2]) + 1
-  local lines = vim.api.nvim_buf_get_lines(0, s_start[2] - 1, s_end[2], false)
-  lines[1] = string.sub(lines[1], s_start[3], -1)
-  if n_lines == 1 then
-    lines[n_lines] = string.sub(lines[n_lines], 1, s_end[3] - s_start[3] + 1)
-  else
-    lines[n_lines] = string.sub(lines[n_lines], 1, s_end[3])
-  end
-
-  return table.concat(lines, "\n")
-end
 
 local function encode_text(text)
   local encoded_text = vim.fn.json_encode(text)
@@ -108,24 +89,24 @@ M.setup = function(user_cfg)
 end
 
 M.ai_improve_grammar = function()
-  send_template(template_body_grammar, true, current_line())
+  send_template(template_body_grammar, true, buffer_helper.current_line())
 end
 
 M.ai_set_spelllang = function()
-  local content = send_template(template_body_recognize_language, false, current_line())
+  local content = send_template(template_body_recognize_language, false, buffer_helper.current_line())
   if (content) then
     vim.cmd("set spelllang=" .. content)
   end
 end
 
 M.ai_write_minutes = function()
-  send_template(template_body_minutes, true, visual_selection())
+  send_template(template_body_minutes, true, buffer_helper.visual_selection())
 end
 
 M.ai_interactive = function()
   vim.ui.input({ prompt = "Give instructions" }, function(command)
     if command then
-      send_template(template_body_interact, true, command, visual_selection())
+      send_template(template_body_interact, true, command, buffer_helper.visual_selection())
     end
   end)
 end
