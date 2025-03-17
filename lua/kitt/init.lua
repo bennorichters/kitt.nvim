@@ -85,7 +85,10 @@ M.setup = function(user_cfg)
     error("Unknown 'post' option")
   end
 
-  send_request = send_request_factory(post)
+  local endpoint = os.getenv("OPENAI_ENDPOINT")
+  local key = os.getenv("OPENAI_API_KEY")
+
+  send_request = send_request_factory(post, endpoint, key)
 end
 
 M.ai_improve_grammar = function()

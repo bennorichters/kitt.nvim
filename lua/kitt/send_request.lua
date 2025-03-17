@@ -1,7 +1,4 @@
-local endpoint = os.getenv("OPENAI_ENDPOINT")
-local key = os.getenv("OPENAI_API_KEY")
-
-return function(post)
+return function(post, endpoint, key)
   return function(body_content, extra_opts)
     local opts = {
       body = body_content,
