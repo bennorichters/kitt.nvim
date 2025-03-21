@@ -39,11 +39,8 @@ end
 local function send_stream_request(body_content)
   local ui_select = text_prompt.process_buf_text(text_prompt.prompt)
   local buf = response_writer.ensure_buf_win()
-  local write = function(content)
-    response_writer.write(content, buf)
-  end
-  local process_stream = stream_handler.process_wrap( stream_handler.parse, ui_select, write)
-
+  local write = function(content) response_writer.write(content, buf) end
+  local process_stream = stream_handler.process_wrap(stream_handler.parse, ui_select, write)
   local stream = { stream = vim.schedule_wrap(process_stream) }
 
   send_request(body_content, stream)
