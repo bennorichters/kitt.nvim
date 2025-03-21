@@ -46,7 +46,7 @@ result.parse     = function(stream_data)
 end
 
 
-result.process_wrap = function(parse, ui_select, write, buf)
+result.process_wrap = function(parse, ui_select, write)
   return function(error, stream_data)
     if error then
       log.fmt_debug("error in stream call back: error=%s, stream_data=%s", error, stream_data)
@@ -57,7 +57,7 @@ result.process_wrap = function(parse, ui_select, write, buf)
     if done then
       ui_select()
     elseif content ~= nil then
-      write(content, buf)
+      write(content)
     end
   end
 end
