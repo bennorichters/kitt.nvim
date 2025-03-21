@@ -45,7 +45,6 @@ result.parse     = function(stream_data)
   return false, json.choices[1].delta.content
 end
 
-
 result.process_wrap = function(parse, ui_select, write)
   return function(error, stream_data)
     if error then
@@ -56,7 +55,7 @@ result.process_wrap = function(parse, ui_select, write)
     local done, content = parse(stream_data)
     if done then
       ui_select()
-    elseif content ~= nil then
+    else
       write(content)
     end
   end
