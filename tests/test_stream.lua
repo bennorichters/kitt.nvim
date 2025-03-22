@@ -6,8 +6,9 @@ local p = stream.parse
 local w = stream.process_wrap
 
 local T = new_set()
+T["stream"] = new_set()
 
-T["stream.parser"] = function()
+T["stream"]["parser"] = function()
   eq({ p(nil) }, { false, nil })
   eq({ p("") }, { false, nil })
   eq({ p("data: [DONE]") }, { true, nil })
@@ -17,7 +18,8 @@ T["stream.parser"] = function()
   eq({ p('data: {"choices":[{"delta":{"content":"abc"}}]') }, { false, nil })
 end
 
-T["stream.process_wrap.should_not_write_without_content"] = function()
+T["stream"]["process_wrap"] = new_set()
+T["stream"]["process_wrap"]["should_not_write_without_content"] = function()
   local parse_no_error_no_content = function(_) return false, nil end
   local ui_select = function() end
   local write = function(content)
