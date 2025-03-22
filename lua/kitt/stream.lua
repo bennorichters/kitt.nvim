@@ -55,7 +55,7 @@ M.process_wrap   = function(parse, ui_select, write)
     local done, content = parse(stream_data)
     if done then
       ui_select()
-    else
+    elseif content then
       write(content)
     end
   end
