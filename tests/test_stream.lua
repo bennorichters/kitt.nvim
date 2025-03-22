@@ -4,7 +4,7 @@ local p = require("kitt.stream").parse
 
 local T = new_set()
 
-T["parser"] = function()
+T["stream.parser"] = function()
   eq({ p(nil) }, { false, nil })
   eq({ p("") }, { false, nil })
   eq({ p("data: [DONE]") }, { true, nil })
