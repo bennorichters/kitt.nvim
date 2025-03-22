@@ -1,3 +1,4 @@
+local config = require("kitt.config")
 local buffer_helper = require("kitt.buffer_helper")
 local send_request_factory = require("kitt.send_request")
 local template_sender_factory = require("kitt.template_sender")
@@ -10,23 +11,17 @@ local tpl_body_recognize_language = require("kitt.templates.recognize_language")
 local log = require("kitt.log")
 log.trace("kitt log here")
 
-local CFG = {
-  post = "curl",
-  timeout = 6000
-}
-
 local template_sender
 
 local M = {}
 
 M.setup = function(user_cfg)
-  CFG = vim.tbl_extend('force', CFG, user_cfg or {})
+  config.setup(user_cfg)
 
   local post
-
-  if CFG.post == "curl" then
+  if config.get().post == "curl" then
     post = require("plenary.curl").post
-  elseif CFG.post == "mock" then
+  elseif config.get().post == "mock" then
     post = require("kitt.mock_post")
   else
     log.fmt_error("Unknown 'post' option")
@@ -37,7 +32,7 @@ M.setup = function(user_cfg)
   local key = os.getenv("OPENAI_API_KEY")
 
   local send_request = send_request_factory(post, endpoint, key)
-  template_sender = template_sender_factory(send_request, CFG.timeout)
+  template_sender = template_sender_factory(send_request, config.get().timeout)
 end
 
 M.ai_improve_grammar = function()
