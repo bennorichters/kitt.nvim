@@ -5,9 +5,9 @@ local content = ""
 
 local buf_win_state = { buf = nil, win = nil }
 
-local rw = {}
+local M = {}
 
-rw.ensure_buf_win = function()
+M.ensure_buf_win = function()
   buf_win_state.buf = buf_win_state.buf or vim.api.nvim_create_buf(true, true)
   if buf_win_state.win and vim.api.nvim_win_get_buf(buf_win_state.win) == buf_win_state.buf then
     return buf_win_state.buf
@@ -22,7 +22,7 @@ rw.ensure_buf_win = function()
   return buf_win_state.buf
 end
 
-rw.write = function(delta, buf)
+M.write = function(delta, buf)
   log.fmt_trace("response_writer delta=%s", delta)
 
   delta:gsub(".", function(c)
@@ -42,4 +42,4 @@ rw.write = function(delta, buf)
   end
 end
 
-return rw
+return M

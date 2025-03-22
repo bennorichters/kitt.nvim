@@ -19,12 +19,13 @@ M.setup = function(user_cfg)
   config.setup(user_cfg)
 
   local post
-  if config.get().post == "curl" then
+  local cfg_post = config.get().post
+  if cfg_post == "curl" then
     post = require("plenary.curl").post
-  elseif config.get().post == "mock" then
+  elseif cfg_post == "mock" then
     post = require("kitt.mock_post")
   else
-    log.fmt_error("Unknown 'post' option")
+    log.fmt_error("Unknown 'post' option: " .. cfg_post)
     error("Unknown 'post' option")
   end
 
