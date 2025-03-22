@@ -7,8 +7,6 @@ local commands = require("kitt.commands")
 local log = require("kitt.log")
 log.trace("kitt log here")
 
-local template_sender
-
 local M = {}
 
 M.setup = function(user_cfg)
@@ -29,7 +27,7 @@ M.setup = function(user_cfg)
   local key = os.getenv("OPENAI_API_KEY")
 
   local send_request = send_request_factory(post, endpoint, key)
-  template_sender = template_sender_factory(send_request, config.get().timeout)
+  local template_sender = template_sender_factory(send_request, config.get().timeout)
 
   commands.setup(buffer_helper, template_sender)
 end
