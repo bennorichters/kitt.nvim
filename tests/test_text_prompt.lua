@@ -13,7 +13,7 @@ local T = MiniTest.new_set({
   },
 })
 
-T["options"] = function()
+T["prompt"] = function()
   local buf = child.api.nvim_create_buf(true, true)
 
   child.api.nvim_buf_set_lines(buf, 0, -1, false, { "a", "b", "c", "d", "e" })
