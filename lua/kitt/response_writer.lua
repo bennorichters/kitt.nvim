@@ -14,6 +14,9 @@ M.ensure_buf_win = function()
   vim.wo.wrap = true
   vim.wo.linebreak = true
 
+  line = 0
+  content = ""
+
   return buf
 end
 
