@@ -6,6 +6,7 @@ result.prompt = function(target_buffer, target_line, content)
   }, function(choice)
     if choice == "replace" then
       vim.api.nvim_buf_set_lines(target_buffer, target_line, target_line + 1, false, content)
+      vim.api.nvim_buf_delete(0, {})
     end
   end)
 end
