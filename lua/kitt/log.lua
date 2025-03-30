@@ -45,7 +45,7 @@ local unpack = unpack or table.unpack
 log.new = function(config, standalone)
   config = vim.tbl_deep_extend("force", default_config, config)
 
-  local outfile = string.format('%s/%s.log', vim.api.nvim_call_function('stdpath', {'data'}), config.plugin)
+  local outfile = string.format('%s/%s.log', vim.api.nvim_call_function('stdpath', { 'data' }), config.plugin)
 
   local obj
   if standalone then
@@ -98,11 +98,11 @@ log.new = function(config, standalone)
     -- Output to console
     if config.use_console then
       local console_string = string.format(
-      "[%-6s%s] %s: %s",
-      nameupper,
-      os.date("%H:%M:%S"),
-      lineinfo,
-      msg
+        "[%-6s%s] %s: %s",
+        nameupper,
+        os.date("%H:%M:%S"),
+        lineinfo,
+        msg
       )
 
       if config.highlights and level_config.hl then
@@ -123,7 +123,7 @@ log.new = function(config, standalone)
     if config.use_file then
       local fp = io.open(outfile, "a")
       local str = string.format("[%-6s%s] %s: %s\n",
-      nameupper, os.date(), lineinfo, msg)
+        nameupper, os.date(), lineinfo, msg)
       fp:write(str)
       fp:close()
     end
@@ -134,8 +134,8 @@ log.new = function(config, standalone)
       return log_at_level(i, x, make_string, ...)
     end
 
-    obj[("fmt_%s" ):format(x.name)] = function(...)
-      local passed = {...}
+    obj[("fmt_%s"):format(x.name)] = function(...)
+      local passed = { ... }
       return log_at_level(i, x, function()
         local fmt = table.remove(passed, 1)
         local inspected = {}
@@ -146,9 +146,16 @@ log.new = function(config, standalone)
       end)
     end
   end
+
+  function obj:disable()
+    setmetatable(self, {
+      __index = function(_, _)
+        return function() end
+      end
+    })
+  end
 end
 
 -- }}}
 
 return log
-
