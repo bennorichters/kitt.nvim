@@ -1,6 +1,6 @@
-local result = {}
+local M = {}
 
-result.prompt = function(target_buffer, target_line, content)
+M.prompt = function(target_buffer, target_line, content)
   vim.ui.select({ "replace", "ignore" }, {
     prompt = "Choose what to do with the generated text"
   }, function(choice)
@@ -12,7 +12,7 @@ result.prompt = function(target_buffer, target_line, content)
 end
 
 
-result.process_buf_text = function(prompt)
+M.process_buf_text = function(prompt)
   local target_line = vim.fn.line(".") - 1
   local target_buffer = vim.fn.bufnr()
 
@@ -25,4 +25,4 @@ result.process_buf_text = function(prompt)
   return select_with_result
 end
 
-return result
+return M

@@ -1,6 +1,6 @@
 local log = require("kitt.log")
 
-local M = { buffer = nil, line = 0, content = "" }
+local M = { line = 0, content = "" }
 
 function M:new(obj)
   obj = obj or {}
