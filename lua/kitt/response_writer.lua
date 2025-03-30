@@ -1,11 +1,16 @@
 local log = require("kitt.log")
 
-local line = 0
-local content = ""
+local M = { buffer = nil, line = 0, content = "" }
 
-local M = {}
+function M:new(obj)
+  obj = obj or {}
+  setmetatable(obj, self)
+  self.__index = self
 
-M.ensure_buf_win = function()
+  return obj
+end
+
+function M:ensure_buf_win()
   local buf = vim.api.nvim_create_buf(true, true)
 
   vim.cmd("vsplit")
@@ -14,29 +19,26 @@ M.ensure_buf_win = function()
   vim.wo.wrap = true
   vim.wo.linebreak = true
 
-  line = 0
-  content = ""
-
   return buf
 end
 
-M.write = function(delta, buf)
+function M:write(delta, buf)
   log.fmt_trace("response_writer delta=%s", delta)
 
   delta:gsub(".", function(c)
     if c == "\n" then
-      log.fmt_trace("response_writer line=%s content=%s", line, content)
-      vim.api.nvim_buf_set_lines(buf, line, -1, false, { content })
-      line = line + 1
-      content = ""
+      log.fmt_trace("response_writer line=%s content=%s", self.line, self.content)
+      vim.api.nvim_buf_set_lines(buf, self.line, -1, false, { self.content })
+      self.line = self.line + 1
+      self.content = ""
     else
-      content = content .. c
+      self.content = self.content .. c
     end
   end)
 
-  if content then
-    log.fmt_trace("response_writer -write rest- line=%s content=%s", line, content)
-    vim.api.nvim_buf_set_lines(buf, line, -1, false, { content })
+  if self.content then
+    log.fmt_trace("response_writer -write rest- line=%s content=%s", self.line, self.content)
+    vim.api.nvim_buf_set_lines(buf, self.line, -1, false, { self.content })
   end
 end
 
