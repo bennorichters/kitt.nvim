@@ -26,7 +26,7 @@ M.ai_write_minutes = function()
 end
 
 M.ai_interactive = function()
-  vim.ui.input({ prompt = "Give instructions" }, function(command)
+  vim.ui.input({ prompt = "Give instructions: " }, function(command)
     if command then
       M.template_sender(tpl_interact, true, command, M.buffer_helper.visual_selection())
     end
