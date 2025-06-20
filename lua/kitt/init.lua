@@ -38,7 +38,7 @@ M.ai_improve_grammar = function()
   commands.ai_improve_grammar()
 end
 
-M.ai_suggesrt_grammar = function()
+M.ai_suggest_grammar = function()
   commands.ai_suggest_grammar()
 end
 
