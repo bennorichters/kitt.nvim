@@ -42,5 +42,6 @@ return {
     {
       content = "%s",
       role = "user"
-    } }
+    }
+  }
 }
