@@ -34,24 +34,10 @@ M.setup = function(user_cfg)
   commands.setup(buffer_helper, template_sender)
 end
 
-M.ai_improve_grammar = function()
-  commands.ai_improve_grammar()
-end
-
-M.ai_suggest_grammar = function()
-  commands.ai_suggest_grammar()
-end
-
-M.ai_set_spelllang = function()
-  commands.ai_set_spelllang()
-end
-
-M.ai_write_minutes = function()
-  commands.ai_write_minutes()
-end
-
-M.ai_interactive = function()
-  commands.ai_interactive()
-end
+M.ai_improve_grammar = function() commands.ai_improve_grammar() end
+M.ai_suggest_grammar = function() commands.ai_suggest_grammar() end
+M.ai_set_spelllang = function() commands.ai_set_spelllang() end
+M.ai_write_minutes = function() commands.ai_write_minutes() end
+M.ai_interactive = function() commands.ai_interactive() end
 
 return M
