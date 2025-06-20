@@ -9,11 +9,11 @@ return {
           "Your response should be in JSON format, structured as an array. " ..
           "Each element in the array is an object consisting of three key-value pairs:" ..
           "\n\n" ..
-          "start_position: The starting position of the error, measured in characters counted " ..
+          "start: The starting position of the error, measured in characters counted " ..
           "from the start of the paragraph. This is zero-based, meaning the first character " ..
           "of the paragraph has a position of zero." ..
           "\n\n" ..
-          "end_position: The position immediately after the last character of the error, " ..
+          "end: The position immediately after the last character of the error, " ..
           "such that the end position is not inclusive." ..
           "\n\n" ..
           "suggestion: The text containing your proposed correction or improvement.",
