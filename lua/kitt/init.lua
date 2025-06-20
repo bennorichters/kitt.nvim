@@ -38,6 +38,10 @@ M.ai_improve_grammar = function()
   commands.ai_improve_grammar()
 end
 
+M.ai_suggesrt_grammar = function()
+  commands.ai_suggest_grammar()
+end
+
 M.ai_set_spelllang = function()
   commands.ai_set_spelllang()
 end
