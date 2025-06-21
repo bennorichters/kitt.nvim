@@ -11,9 +11,9 @@ return function(_, opts)
     opts.stream(nil, done)
   else
     local content = '"[' ..
-        '{\\"start\\":0,\\"end\\":3,\\"suggestion\\":\\"Zij\\"},' ..
-        '{\\"start\\":11,\\"end\\":22,\\"suggestion\\":\\"onmiddellijk\\"},' ..
-        '{\\"start\\":35,\\"end\\":39,\\"suggestion\\":\\"zeg\\"}' ..
+        '{\\"start\\":12,\\"end\\":23,\\"suggestion\\":\\"brighter\\"},' ..
+        '{\\"start\\":24,\\"end\\":28,\\"suggestion\\":\\"than\\"},' ..
+        '{\\"start\\":36,\\"end\\":46,\\"suggestion\\":\\"yesterday\\"}' ..
         ']"'
 
     return {
