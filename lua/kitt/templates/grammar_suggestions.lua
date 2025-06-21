@@ -39,7 +39,7 @@ return {
       content = "[" ..
           '{"start":0,"end":3,"suggestion":"Zij"},' ..
           '{"start":11,"end":22,"suggestion":"onmiddellijk"},' ..
-          '{"start":35,"end":39,"suggestion":"zeg"},' ..
+          '{"start":35,"end":39,"suggestion":"zeg"}' ..
           "]",
       role = "assistant"
     },
