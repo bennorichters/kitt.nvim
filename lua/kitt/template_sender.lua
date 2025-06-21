@@ -10,7 +10,6 @@ end
 return function(send_request, timeout)
   local send_plain_request = function(body_content)
     local response = send_request(body_content, { timeout = timeout })
-
     if (response.status == 200) then
       local response_body = vim.fn.json_decode(response.body)
       local content = response_body.choices[1].message.content

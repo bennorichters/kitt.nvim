@@ -10,6 +10,15 @@ return function(_, opts)
     opts.stream(nil, last)
     opts.stream(nil, done)
   else
-    return "Mock"
+    local content = '"[' ..
+        '{\\"start\\":0,\\"end\\":3,\\"suggestion\\":\\"Zij\\"},' ..
+        '{\\"start\\":11,\\"end\\":22,\\"suggestion\\":\\"onmiddellijk\\"},' ..
+        '{\\"start\\":35,\\"end\\":39,\\"suggestion\\":\\"zeg\\"}' ..
+        ']"'
+
+    return {
+      status = 200,
+      body = '{ "choices": [ { "message": { "content": ' .. content .. ' } } ] }',
+    }
   end
 end

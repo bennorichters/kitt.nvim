@@ -16,7 +16,8 @@ M.ai_improve_grammar = function()
 end
 
 M.ai_suggest_grammar = function()
-  M.template_sender(tpl_grammar_suggestion, true, M.buffer_helper.current_line())
+  local content = M.template_sender(tpl_grammar_suggestion, false, M.buffer_helper.current_line())
+  print(content)
 end
 
 M.ai_set_spelllang = function()
