@@ -17,7 +17,15 @@ end
 
 M.ai_suggest_grammar = function()
   local content = M.template_sender(tpl_grammar_suggestion, false, M.buffer_helper.current_line())
-  print(content)
+  local json_value = vim.fn.json_decode(content)
+  local groups = {}
+  local line_nr = vim.fn.line(".")
+  for _, obj in ipairs(json_value) do
+    local start_pos = obj["start"]
+    local length = obj["end"] - start_pos
+    table.insert(groups, { line_nr, start_pos + 1, length })
+  end
+  vim.fn.matchaddpos("SpellBad", groups)
 end
 
 M.ai_set_spelllang = function()
